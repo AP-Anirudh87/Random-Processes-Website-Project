@@ -5,9 +5,7 @@ APP.PY — Flask Application Server & API Routes
 Project: Complex Random Process Analysis for Communication Systems
          with Applications to Speech Enhancement
 ================================================================================
-Authors: Navin Kumar PG (24BEC1055)
-         A.P. Anirudh       (24BEC1158)
-         Kailash N H        (24BEC1546)
+Author:  A.P. Anirudh       (24BEC1158)
 Faculty: Dr. Kalaivan K
 ================================================================================
 Description:
@@ -37,6 +35,8 @@ Revision History:
 # ──────────────────────────────────────────────────────────────────────────────
 # Standard Library Imports
 # ──────────────────────────────────────────────────────────────────────────────
+from __future__ import annotations
+
 import os
 import sys
 import uuid
@@ -48,6 +48,7 @@ import traceback
 from pathlib import Path
 from datetime import datetime, timezone
 from functools import wraps
+from typing import Optional, Any, Dict, List, Tuple
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Third-Party Imports
@@ -267,14 +268,14 @@ def secure_filename_custom(filename: str) -> str:
     return "".join(safe_chars) or "unnamed"
 
 
-def api_response(data: dict, status_code: int = 200, message: str = "OK") -> tuple:
+def api_response(data: Any = None, status_code: int = 200, message: str = "OK") -> tuple:
     """
     Create a standardised JSON API response.
 
     Parameters
     ----------
-    data : dict
-        The response payload.
+    data : Any
+        The response payload (dict, list, etc.).
     status_code : int
         HTTP status code.
     message : str
@@ -288,13 +289,13 @@ def api_response(data: dict, status_code: int = 200, message: str = "OK") -> tup
     response = {
         "status": "success" if status_code < 400 else "error",
         "message": message,
-        "data": data,
+        "data": data if data is not None else {},
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     return jsonify(response), status_code
 
 
-def api_error(message: str, status_code: int = 400, details: dict = None) -> tuple:
+def api_error(message: str, status_code: int = 400, details: Optional[dict] = None) -> tuple:
     """
     Create a standardised JSON error response.
 
@@ -365,10 +366,12 @@ def _register_routes(app: Flask) -> None:
             "server": "running",
             "project": "Complex Random Process Analysis",
             "version": "1.0.0",
+            "author": {
+                "name": "A.P. Anirudh",
+                "id": "24BEC1158",
+            },
             "team": [
-                {"name": "Navin Kumar PG", "id": "24BEC1055"},
                 {"name": "A.P. Anirudh", "id": "24BEC1158"},
-                {"name": "Kailash N H", "id": "24BEC1546"},
             ],
             "faculty": "Dr. Kalaivan K",
             "database": "connected",
@@ -458,9 +461,8 @@ def _register_routes(app: Flask) -> None:
             db_session = create_session(
                 filename=original_name,
                 sample_type="upload",
+                session_id=session_id,
             )
-            # Override the auto-generated session_id
-            db_session.session_id = session_id
             db_session.input_audio_path = str(save_path)
             db.session.commit()
 
@@ -525,9 +527,8 @@ def _register_routes(app: Flask) -> None:
             db_session = create_session(
                 filename=f"{sample_key}_synthetic.wav",
                 sample_type=sample_key,
+                session_id=session_id,
             )
-            db_session.session_id = session_id
-            db.session.commit()
         except Exception as exc:
             logger.error("Failed to create session: %s", exc)
             return api_error(f"Database error: {exc}", 500)
@@ -699,6 +700,8 @@ def _register_routes(app: Flask) -> None:
 
             # Refresh session from DB
             db_session = get_session(session_id)
+            if db_session is None:
+                return api_error(f"Session not found: {session_id}", 404)
             response_data = db_session.to_summary_dict()
             response_data["steps"] = results.get("steps", [])
 
@@ -1058,25 +1061,20 @@ def _register_routes(app: Flask) -> None:
         Returns
         -------
         JSON
-            Project title, team, SDGs, and mathematical framework info.
+            Project title, author, SDGs, and mathematical framework info.
         """
         return api_response({
             "title": "Complex Random Process Analysis for Communication Systems with Applications to Speech Enhancement",
+            "author": {
+                "name": "A.P. Anirudh",
+                "id": "24BEC1158",
+                "role": "Author & Developer",
+            },
             "team": [
-                {
-                    "name": "Navin Kumar PG",
-                    "id": "24BEC1055",
-                    "role": "Lead Developer & DSP Engineer",
-                },
                 {
                     "name": "A.P. Anirudh",
                     "id": "24BEC1158",
-                    "role": "Backend Architect & AI Integration",
-                },
-                {
-                    "name": "Kailash N H",
-                    "id": "24BEC1546",
-                    "role": "Frontend Engineer & Data Visualization",
+                    "role": "Author & Developer",
                 },
             ],
             "faculty": {
@@ -1249,7 +1247,7 @@ def _register_routes(app: Flask) -> None:
             {
                 "method": "GET",
                 "path": "/api/project-info",
-                "description": "Get project metadata and team info",
+                "description": "Get project metadata and author info",
             },
             {
                 "method": "GET",
@@ -1320,9 +1318,7 @@ if __name__ == "__main__":
         "    |   Complex Random Process Analysis for Communication Systems   |\n"
         "    |        with Applications to Speech Enhancement                |\n"
         "    |                                                                |\n"
-        "    |   Team:  Navin Kumar PG  (24BEC1055)                          |\n"
-        "    |          A.P. Anirudh    (24BEC1158)                          |\n"
-        "    |          Kailash N H     (24BEC1546)                          |\n"
+        "    |   Author: A.P. Anirudh   (24BEC1158)                         |\n"
         "    |                                                                |\n"
         "    |   Faculty: Dr. Kalaivan K                                     |\n"
         "    |   Institution: Vellore Institute of Technology (VIT)          |\n"

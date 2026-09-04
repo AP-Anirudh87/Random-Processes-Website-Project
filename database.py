@@ -5,9 +5,7 @@ DATABASE.PY — Database Models & Management Layer
 Project: Complex Random Process Analysis for Communication Systems
          with Applications to Speech Enhancement
 ================================================================================
-Authors: Navin Kumar PG (24BEC1055)
-         A.P. Anirudh       (24BEC1158)
-         Kailash N H        (24BEC1546)
+Author:  A.P. Anirudh       (24BEC1158)
 Faculty: Dr. Kalaivan K
 ================================================================================
 Description:
@@ -34,10 +32,13 @@ Revision History:
 # ──────────────────────────────────────────────────────────────────────────────
 # Standard Library Imports
 # ──────────────────────────────────────────────────────────────────────────────
+from __future__ import annotations
+
 import json
 import uuid
 import logging
 from datetime import datetime, timezone
+from typing import Optional
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Third-Party Imports
@@ -287,6 +288,11 @@ class ProcessingResult(db.Model):
     # ──────────────────────────────────────────────────────────────────────
     #  Magic / dunder methods
     # ──────────────────────────────────────────────────────────────────────
+
+    def __init__(self, **kwargs):
+        """Initialise model attributes from keyword arguments."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def __repr__(self) -> str:
         """Concise developer-friendly representation."""
@@ -622,6 +628,11 @@ class ProcessingLog(db.Model):
         default=0.0,
     )
 
+    def __init__(self, **kwargs):
+        """Initialise model attributes from keyword arguments."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     def __repr__(self) -> str:
         return (
             f"<ProcessingLog "
@@ -698,6 +709,11 @@ class AudioSample(db.Model):
     is_active = db.Column(db.Boolean, nullable=False, default=True)
     icon = db.Column(db.String(10), nullable=True, default="🔊")
     sort_order = db.Column(db.Integer, nullable=False, default=0)
+
+    def __init__(self, **kwargs):
+        """Initialise model attributes from keyword arguments."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def __repr__(self) -> str:
         return f"<AudioSample {self.sample_key} snr={self.snr_db}dB>"
@@ -872,6 +888,7 @@ def _seed_audio_samples() -> None:
 def create_session(
     filename: str = "unknown.wav",
     sample_type: str = "upload",
+    session_id: str | None = None,
 ) -> ProcessingResult:
     """
     Create a new processing session in the database.
@@ -882,14 +899,18 @@ def create_session(
         Original filename of the uploaded audio.
     sample_type : str
         Source category identifier.
+    session_id : str or None
+        Optional explicit session UUID. If omitted, a new UUID is generated.
 
     Returns
     -------
     ProcessingResult
         The newly created (and committed) database row.
     """
+    if session_id is None:
+        session_id = str(uuid.uuid4())
     session = ProcessingResult(
-        session_id=str(uuid.uuid4()),
+        session_id=session_id,
         filename=filename,
         sample_type=sample_type,
         status="pending",
@@ -1264,9 +1285,7 @@ def generate_text_report(session_id: str) -> str:
         "  Project : Complex Random Process Analysis for Communication",
         "            Systems with Applications to Speech Enhancement",
         "",
-        "  Team    : Navin Kumar PG  (24BEC1055)",
-        "            A.P. Anirudh    (24BEC1158)",
-        "            Kailash N H     (24BEC1546)",
+        "  Author  : A.P. Anirudh    (24BEC1158)",
         "",
         "  Faculty : Dr. Kalaivan K",
         "",

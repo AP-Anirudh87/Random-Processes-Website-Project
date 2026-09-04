@@ -5,9 +5,7 @@ SPEECH_ENGINE.PY — Digital Signal Processing & AI Speech Pipeline
 Project: Complex Random Process Analysis for Communication Systems
          with Applications to Speech Enhancement
 ================================================================================
-Authors: Navin Kumar PG (24BEC1055)
-         A.P. Anirudh       (24BEC1158)
-         Kailash N H        (24BEC1546)
+Author:  A.P. Anirudh       (24BEC1158)
 Faculty: Dr. Kalaivan K
 ================================================================================
 Description:
@@ -53,7 +51,7 @@ import logging
 import tempfile
 import concurrent.futures
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Third-Party Imports
@@ -1051,14 +1049,20 @@ def _run_asr_with_timeout(
     timeout_sec: int,
 ) -> str:
     """Run recognize_google in a thread with a hard wall-clock deadline."""
-    recognizer = sr.Recognizer()
+    recognizer: Any = sr.Recognizer()
     recognizer.energy_threshold         = energy_threshold
     recognizer.dynamic_energy_threshold = False
     recognizer.pause_threshold          = 0.5
     recognizer.non_speaking_duration    = 0.3
 
+    if not hasattr(recognizer, "recognize_google"):
+        raise AttributeError(
+            "The SpeechRecognition library is missing the 'recognize_google' method. "
+            "On Python 3.13, run: pip install audioop-lts"
+        )
+
     def _call():
-        return recognizer.recognize_google(audio_data, language=language, show_all=False)
+        return recognizer.recognize_google(audio_data, language=language, show_all=False)  # type: ignore[attr-defined]
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
         future = pool.submit(_call)
@@ -1719,7 +1723,7 @@ def process_pipeline(
         language = DEFAULT_LANGUAGE
 
     pipeline_start = time.time()
-    results = {
+    results: dict[str, Any] = {
         "session_id": session_id,
         "status": "processing",
         "language": language,

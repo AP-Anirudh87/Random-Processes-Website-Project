@@ -5,9 +5,7 @@
  * Project: Complex Random Process Analysis for Communication Systems
  *          with Applications to Speech Enhancement
  * ================================================================================
- * Authors: Navin Kumar PG (24BEC1055)
- *          A.P. Anirudh    (24BEC1158)
- *          Kailash N H     (24BEC1546)
+ * Author:  A.P. Anirudh    (24BEC1158)
  * Faculty: Dr. Kalaivan K
  * ================================================================================
  * Description:
@@ -2666,7 +2664,7 @@ function initPremiumTilt() {
         styles
     );
     console.log(
-        "%cTeam: Navin Kumar PG | A.P. Anirudh | Kailash N H",
+        "%cAuthor: A.P. Anirudh (24BEC1158)",
         "color: #F2A900; font-size: 11px;"
     );
     console.log(
